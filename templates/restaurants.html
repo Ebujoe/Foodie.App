@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 0;
+        color: white;
+        text-align: center;
+    }
+    
+    .page-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .filters-section {
+        background: white;
+        padding: 2rem 0;
+        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 73px;
+        z-index: 100;
+    }
+    
+    .filters-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid var(--gray-light);
+        background: white;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: var(--dark);
+        font-weight: 500;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .filter-btn:hover {
+        border-color: var(--primary-color);
+        background: #FFF9E6;
+    }
+    
+    .filter-btn.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        font-weight: 600;
+    }
+    
+    .search-input {
+        flex: 1;
+        min-width: 250px;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid var(--gray-light);
+        border-radius: var(--radius-md);
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+    
+    .restaurant-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    
+    .restaurant-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--dark);
+        display: block;
+    }
+    
+    .restaurant-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .restaurant-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        position: relative;
+    }
+    
+    .restaurant-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .restaurant-info {
+        padding: 1.5rem;
+    }
+    
+    .restaurant-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .restaurant-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .restaurant-rating {
+        background: var(--success);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .restaurant-description {
+        color: var(--gray);
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .restaurant-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: var(--gray);
+        flex-wrap: wrap;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .status-open {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+    
+    .status-closed {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--gray);
+    }
+    
+    .no-results i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .no-results h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+    
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .filters-container {
+            flex-direction: column;
+        }
+        
+        .search-input {
+            width: 100%;
+        }
+        
+        .restaurant-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h1>🍽️ Browse Restaurants</h1>
+    <p>Discover amazing food near you</p>
+</div>
+
+<!-- Filters Section -->
+<div class="filters-section">
+    <div class="filters-container">
+        <!-- Category Filters -->
+        <div class="filter-group">
+            <a href="{{ url_for('restaurants', category='all') }}" 
+               class="filter-btn {% if current_category == 'all' %}active{% endif %}">
+                All
+            </a>
+            <a href="{{ url_for('restaurants', category='fast-food') }}" 
+               class="filter-btn {% if current_category == 'fast-food' %}active{% endif %}">
+                🍔 Fast Food
+            </a>
+            <a href="{{ url_for('restaurants', category='pizza') }}" 
+               class="filter-btn {% if current_category == 'pizza' %}active{% endif %}">
+                🍕 Pizza
+            </a>
+            <a href="{{ url_for('restaurants', category='asian') }}" 
+               class="filter-btn {% if current_category == 'asian' %}active{% endif %}">
+                🍜 Asian
+            </a>
+            <a href="{{ url_for('restaurants', category='healthy') }}" 
+               class="filter-btn {% if current_category == 'healthy' %}active{% endif %}">
+                🥗 Healthy
+            </a>
+            <a href="{{ url_for('restaurants', category='desserts') }}" 
+               class="filter-btn {% if current_category == 'desserts' %}active{% endif %}">
+                🍰 Desserts
+            </a>
+            <a href="{{ url_for('restaurants', category='coffee') }}" 
+               class="filter-btn {% if current_category == 'coffee' %}active{% endif %}">
+                ☕ Coffee
+            </a>
+        </div>
+        
+        <!-- Search Box -->
+        <form action="{{ url_for('restaurants') }}" method="get" style="flex: 1; display: flex;">
+            <input 
+                type="hidden" 
+                name="category" 
+                value="{{ current_category }}"
+            >
+            <input 
+                type="text" 
+                name="search" 
+                class="search-input" 
+                placeholder="Search restaurants..." 
+                value="{{ search_query }}"
+            >
+        </form>
+    </div>
+</div>
+
+<!-- Restaurant Grid -->
+{% if restaurants %}
+    <div class="restaurant-grid">
+        {% for restaurant in restaurants %}
+        <a href="{{ url_for('restaurant_detail', restaurant_id=restaurant.id) }}" class="restaurant-card">
+            <div style="position: relative;">
+                <img src="{{ restaurant.image }}" alt="{{ restaurant.name }}" class="restaurant-image">
+                {% if restaurant.is_open %}
+                    <span class="restaurant-badge" style="position: absolute;">Open Now</span>
+                {% endif %}
+            </div>
+            
+            <div class="restaurant-info">
+                <div class="restaurant-header">
+                    <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+                    <div class="restaurant-rating">
+                        <i class="fas fa-star"></i>
+                        {{ restaurant.rating }}
+                    </div>
+                </div>
+                
+                <p class="restaurant-description">{{ restaurant.description }}</p>
+                
+                <div class="restaurant-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        {{ restaurant.delivery_time }}
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-motorcycle"></i>
+                        ${{ "%.2f"|format(restaurant.delivery_fee) }} delivery
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-dollar-sign"></i>
+                        ${{ "%.2f"|format(restaurant.min_order) }} min
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    {% if restaurant.is_open %}
+                        <span class="status-badge status-open">
+                            <i class="fas fa-check-circle"></i>
+                            Open Now
+                        </span>
+                    {% else %}
+                        <span class="status-badge status-closed">
+                            <i class="fas fa-times-circle"></i>
+                            Closed
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <!-- No Results Found -->
+    <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h3>No restaurants found</h3>
+        <p>Try adjusting your filters or search query</p>
+        <a href="{{ url_for('restaurants') }}" class="btn-primary" style="margin-top: 1rem;">
+            Clear Filters
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

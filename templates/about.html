@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .page-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 4rem 0;
+        color: white;
+        text-align: center;
+    }
+    
+    .page-hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .content-section {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 4rem 1rem;
+    }
+    
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+    
+    .feature-card {
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-description {
+        color: var(--gray);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <h1>About FOODIE 🍕</h1>
+    <p>Your favorite food delivery service</p>
+</div>
+
+<div class="content-section">
+    <h2 style="text-align: center; margin-bottom: 3rem;">Why Choose FOODIE?</h2>
+    
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3 class="feature-title">Fast Delivery</h3>
+            <p class="feature-description">Get your food delivered in under 30 minutes</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🍽️</div>
+            <h3 class="feature-title">Wide Selection</h3>
+            <p class="feature-description">Choose from hundreds of restaurants</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">⭐</div>
+            <h3 class="feature-title">Quality Service</h3>
+            <p class="feature-description">Rated 4.8/5 by our customers</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">💳</div>
+            <h3 class="feature-title">Easy Payment</h3>
+            <p class="feature-description">Multiple payment options available</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

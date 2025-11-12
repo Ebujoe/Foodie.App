@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .auth-page {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .auth-container {
+        background: white;
+        padding: 3rem;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        max-width: 500px;
+        width: 100%;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+    
+    .auth-header p {
+        color: var(--gray);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--gray-light);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.1);
+    }
+    
+    .form-input.error {
+        border-color: var(--error);
+    }
+    
+    .input-icon {
+        position: relative;
+    }
+    
+    .input-icon i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray);
+    }
+    
+    .input-icon .form-input {
+        padding-left: 3rem;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: var(--gray);
+        transition: color 0.3s;
+    }
+    
+    .password-toggle:hover {
+        color: var(--dark);
+    }
+    
+    .username-feedback {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        display: none;
+    }
+    
+    .username-feedback.available {
+        color: var(--success);
+        display: block;
+    }
+    
+    .username-feedback.taken {
+        color: var(--error);
+        display: block;
+    }
+    
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: var(--primary-color);
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: 'Poppins', sans-serif;
+        color: var(--dark);
+    }
+    
+    .btn-submit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .btn-submit:disabled {
+        background: var(--gray-light);
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .divider {
+        text-align: center;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .divider::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        background: var(--gray-light);
+    }
+    
+    .divider span {
+        background: white;
+        padding: 0 1rem;
+        position: relative;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    .social-buttons {
+        display: grid;
+        gap: 1rem;
+    }
+    
+    .btn-social {
+        padding: 0.75rem;
+        border: 2px solid var(--gray-light);
+        background: white;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: var(--dark);
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .btn-social:hover {
+        border-color: var(--primary-color);
+        background: #FFF9E6;
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 2rem;
+        color: var(--gray);
+    }
+    
+    .auth-footer a {
+        color: var(--primary-dark);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        .auth-container {
+            padding: 2rem 1.5rem;
+        }
+        
+        .auth-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>🍕 Join FOODIE</h1>
+            <p>Create your account and start ordering!</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <!-- Username Field -->
+            <div class="form-group">
+                <label class="form-label" for="username">
+                    <i class="fas fa-user"></i> Username
+                </label>
+                <div class="input-icon">
+                    <i class="fas fa-user"></i>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="form-input"
+                        placeholder="Choose a username" 
+                        required 
+                        minlength="3"
+                        autocomplete="username"
+                    >
+                </div>
+                <div class="username-feedback" id="usernameFeedback"></div>
+            </div>
+            
+            <!-- Email Field -->
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <div class="input-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input"
+                        placeholder="your@email.com" 
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+            </div>
+            
+            <!-- Password Field -->
+            <div class="form-group">
+                <label class="form-label" for="password">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input"
+                        placeholder="Choose a strong password" 
+                        required 
+                        minlength="6"
+                        autocomplete="new-password"
+                    >
+                    <span class="password-toggle" onclick="togglePassword('password')">
+                        <i class="fas fa-eye" id="toggleIcon1"></i>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+                <label class="form-label" for="confirm_password">
+                    <i class="fas fa-lock"></i> Confirm Password
+                </label>
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        class="form-input"
+                        placeholder="Confirm your password" 
+                        required 
+                        minlength="6"
+                        autocomplete="new-password"
+                    >
+                    <span class="password-toggle" onclick="togglePassword('confirm_password')">
+                        <i class="fas fa-eye" id="toggleIcon2"></i>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+        </form>
+        
+        <!-- Divider -->
+        <div class="divider">
+            <span>or continue with</span>
+        </div>
+        
+        <!-- Social Login Buttons -->
+        <div class="social-buttons">
+            <a href="{{ url_for('auth_google') }}" class="btn-social">
+                <i class="fab fa-google"></i>
+                Sign up with Google
+            </a>
+            <a href="{{ url_for('auth_linkedin') }}" class="btn-social">
+                <i class="fab fa-linkedin"></i>
+                Sign up with LinkedIn
+            </a>
+        </div>
+        
+        <!-- Footer -->
+        <div class="auth-footer">
+            Already have an account? 
+            <a href="{{ url_for('login') }}">Log in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle password visibility
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(inputId === 'password' ? 'toggleIcon1' : 'toggleIcon2');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+    
+    // Check username availability
+    const usernameInput = document.getElementById('username');
+    const usernameFeedback = document.getElementById('usernameFeedback');
+    let checkTimeout;
+    
+    usernameInput.addEventListener('input', function() {
+        clearTimeout(checkTimeout);
+        const username = this.value.trim();
+        
+        if (username.length < 3) {
+            usernameFeedback.style.display = 'none';
+            return;
+        }
+        
+        checkTimeout = setTimeout(() => {
+            fetch(`/api/check-username?username=${encodeURIComponent(username)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available) {
+                        usernameFeedback.className = 'username-feedback available';
+                        usernameFeedback.innerHTML = '<i class="fas fa-check-circle"></i> Username is available!';
+                    } else {
+                        usernameFeedback.className = 'username-feedback taken';
+                        usernameFeedback.innerHTML = '<i class="fas fa-times-circle"></i> Username is taken';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking username:', error);
+                });
+        }, 500);
+    });
+    
+    // Password match validation
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const form = document.getElementById('registerForm');
+    
+    form.addEventListener('submit', function(e) {
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            e.preventDefault();
+            alert('⚠️ Passwords do not match!');
+            confirmPasswordInput.focus();
+        }
+    });
+</script>
+{% endblock %}

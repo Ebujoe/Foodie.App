@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       HERO SECTION
+       ============================================ */
+    .hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 4rem 0;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+    }
+    
+    .hero-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+    
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.8s ease;
+    }
+    
+    .hero p {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        animation: fadeInUp 1s ease;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .search-box {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 0.5rem;
+        display: flex;
+        box-shadow: var(--shadow-lg);
+        animation: fadeInUp 1.2s ease;
+    }
+    
+    .search-box input {
+        flex: 1;
+        border: none;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        outline: none;
+        border-radius: var(--radius-md);
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .search-box button {
+        background: var(--primary-color);
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .search-box button:hover {
+        background: var(--primary-dark);
+        transform: scale(1.05);
+    }
+    
+    /* ============================================
+       CATEGORIES SECTION
+       ============================================ */
+    .categories {
+        padding: 3rem 0;
+        background: white;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+    
+    .section-header p {
+        color: var(--gray);
+        font-size: 1.1rem;
+    }
+    
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .category-card {
+        background: white;
+        border: 2px solid var(--gray-light);
+        border-radius: var(--radius-lg);
+        padding: 2rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: var(--dark);
+    }
+    
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-color);
+    }
+    
+    .category-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .category-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    /* ============================================
+       FEATURED RESTAURANTS
+       ============================================ */
+    .featured-restaurants {
+        padding: 3rem 0;
+        background: #F9FAFB;
+    }
+    
+    .restaurant-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .restaurant-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--dark);
+        display: block;
+    }
+    
+    .restaurant-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .restaurant-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .restaurant-info {
+        padding: 1.5rem;
+    }
+    
+    .restaurant-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .restaurant-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .restaurant-rating {
+        background: var(--success);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .restaurant-description {
+        color: var(--gray);
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .restaurant-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: var(--gray);
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    /* ============================================
+       CTA SECTION
+       ============================================ */
+    .cta-section {
+        background: linear-gradient(135deg, #FFC244 0%, #FF6B35 100%);
+        padding: 4rem 0;
+        text-align: center;
+        color: var(--dark);
+    }
+    
+    .cta-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .cta-section h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .cta-section p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: var(--dark);
+        padding: 1rem 2rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-block;
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    /* ============================================
+       MOBILE RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 2rem;
+        }
+        
+        .hero p {
+            font-size: 1rem;
+        }
+        
+        .section-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .category-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .restaurant-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ============================================
+     HERO SECTION
+     ============================================ -->
+<section class="hero">
+    <div class="hero-container">
+        <h1>🍕 Delicious Food, Delivered!</h1>
+        <p>{{ site_tagline }}</p>
+        
+        <form action="{{ url_for('restaurants') }}" method="get" class="search-box">
+            <input 
+                type="text" 
+                name="search" 
+                placeholder="Search for restaurants, cuisines, or dishes..."
+                required
+            >
+            <button type="submit">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- ============================================
+     CATEGORIES SECTION
+     ============================================ -->
+<section class="categories">
+    <div class="section-header">
+        <h2>What are you craving?</h2>
+        <p>Browse by category</p>
+    </div>
+    
+    <div class="category-grid">
+        <a href="{{ url_for('restaurants', category='fast-food') }}" class="category-card">
+            <div class="category-icon">🍔</div>
+            <div class="category-name">Fast Food</div>
+        </a>
+        
+        <a href="{{ url_for('restaurants', category='pizza') }}" class="category-card">
+            <div class="category-icon">🍕</div>
+            <div class="category-name">Pizza</div>
+        </a>
+        
+        <a href="{{ url_for('restaurants', category='asian') }}" class="category-card">
+            <div class="category-icon">🍜</div>
+            <div class="category-name">Asian</div>
+        </a>
+        
+        <a href="{{ url_for('restaurants', category='healthy') }}" class="category-card">
+            <div class="category-icon">🥗</div>
+            <div class="category-name">Healthy</div>
+        </a>
+        
+        <a href="{{ url_for('restaurants', category='desserts') }}" class="category-card">
+            <div class="category-icon">🍰</div>
+            <div class="category-name">Desserts</div>
+        </a>
+        
+        <a href="{{ url_for('restaurants', category='coffee') }}" class="category-card">
+            <div class="category-icon">☕</div>
+            <div class="category-name">Coffee</div>
+        </a>
+    </div>
+</section>
+
+<!-- ============================================
+     FEATURED RESTAURANTS
+     ============================================ -->
+<section class="featured-restaurants">
+    <div class="section-header">
+        <h2>Featured Restaurants</h2>
+        <p>Top picks near you</p>
+    </div>
+    
+    <div class="restaurant-grid">
+        {% for restaurant in restaurants[:6] %}
+        <a href="{{ url_for('restaurant_detail', restaurant_id=restaurant.id) }}" class="restaurant-card">
+            <img src="{{ restaurant.image }}" alt="{{ restaurant.name }}" class="restaurant-image">
+            
+            <div class="restaurant-info">
+                <div class="restaurant-header">
+                    <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+                    <div class="restaurant-rating">
+                        <i class="fas fa-star"></i>
+                        {{ restaurant.rating }}
+                    </div>
+                </div>
+                
+                <p class="restaurant-description">{{ restaurant.description }}</p>
+                
+                <div class="restaurant-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        {{ restaurant.delivery_time }}
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-dollar-sign"></i>
+                        ${{ restaurant.min_order }} min
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('restaurants') }}" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
+            View All Restaurants <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</section>
+
+<!-- ============================================
+     CALL TO ACTION
+     ============================================ -->
+{% if not is_logged_in %}
+<section class="cta-section">
+    <div class="cta-container">
+        <h2>Ready to order?</h2>
+        <p>Sign up now and get your first delivery free!</p>
+        
+        <div class="cta-buttons">
+            <a href="{{ url_for('register') }}" class="btn-primary" style="background: white; color: var(--dark);">
+                <i class="fas fa-user-plus"></i> Create Account
+            </a>
+            <a href="{{ url_for('restaurants') }}" class="btn-secondary">
+                <i class="fas fa-store"></i> Browse Restaurants
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

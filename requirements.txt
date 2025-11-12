@@ -1,0 +1,21 @@
+# ============================================
+# FOODIE - Required Python Packages
+# ============================================
+# These are all the libraries our app needs
+# Install them by running: pip install -r requirements.txt
+# ============================================
+
+# Flask - The web framework we're using
+Flask==3.0.0
+
+# Flask-WTF - For form handling and security
+Flask-WTF==1.2.1
+
+# WTForms - For creating and validating forms
+WTForms==3.1.1
+
+# Werkzeug - For password hashing (we'll use this later)
+Werkzeug==3.0.1
+
+Create: FOODIE/requirements.txt
+Content: [The requirements.txt code from above]
