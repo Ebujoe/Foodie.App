@@ -1,318 +1,241 @@
-# ============================================
-# FOODIE - Database Functions
-# ============================================
-# This file contains all database functions
-# For now, we use Python lists (in-memory data)
-# Later, we'll upgrade to SQLite/PostgreSQL
-# ============================================
+# 🗄️ FOODIE - Database Setup (UPDATED with Phone Number!)
 
-from datetime import datetime
-import random
+import sqlite3
+import os
 
-# ============================================
-# SAMPLE DATA - Restaurants & Menu Items
-# ============================================
+# 📂 Database file location
+DB_PATH = 'foodie.db'
 
-# Restaurant Categories
-CATEGORIES = [
-    {'id': 'fast-food', 'name': 'Fast Food', 'icon': '🍔'},
-    {'id': 'pizza', 'name': 'Pizza', 'icon': '🍕'},
-    {'id': 'asian', 'name': 'Asian', 'icon': '🍜'},
-    {'id': 'healthy', 'name': 'Healthy', 'icon': '🥗'},
-    {'id': 'desserts', 'name': 'Desserts', 'icon': '🍰'},
-    {'id': 'coffee', 'name': 'Coffee & Drinks', 'icon': '☕'},
-]
-
-# Sample Restaurants
-RESTAURANTS = [
-    {
-        'id': 1,
-        'name': 'Burger Paradise',
-        'category': 'fast-food',
-        'description': 'The best burgers in town! Made with fresh ingredients',
-        'image': 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=300&fit=crop',
-        'rating': 4.5,
-        'delivery_time': '20-30 min',
-        'delivery_fee': 2.99,
-        'min_order': 10.00,
-        'is_open': True,
-        'menu': [
-            {'id': 101, 'name': 'Classic Burger', 'description': 'Beef patty, lettuce, tomato, cheese', 'price': 8.99, 'image': 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop'},
-            {'id': 102, 'name': 'Cheese Burger', 'description': 'Double cheese, special sauce', 'price': 9.99, 'image': 'https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=300&h=200&fit=crop'},
-            {'id': 103, 'name': 'Bacon Burger', 'description': 'Crispy bacon, cheese, BBQ sauce', 'price': 10.99, 'image': 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=300&h=200&fit=crop'},
-            {'id': 104, 'name': 'French Fries', 'description': 'Crispy golden fries', 'price': 3.99, 'image': 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&h=200&fit=crop'},
-            {'id': 105, 'name': 'Coke', 'description': '500ml bottle', 'price': 1.99, 'image': 'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=300&h=200&fit=crop'},
-        ]
-    },
-    {
-        'id': 2,
-        'name': 'Pizza Heaven',
-        'category': 'pizza',
-        'description': 'Authentic Italian pizza with wood-fired oven',
-        'image': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&h=300&fit=crop',
-        'rating': 4.8,
-        'delivery_time': '30-40 min',
-        'delivery_fee': 3.49,
-        'min_order': 12.00,
-        'is_open': True,
-        'menu': [
-            {'id': 201, 'name': 'Margherita', 'description': 'Tomato, mozzarella, basil', 'price': 11.99, 'image': 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=300&h=200&fit=crop'},
-            {'id': 202, 'name': 'Pepperoni', 'description': 'Spicy pepperoni, cheese', 'price': 13.99, 'image': 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=300&h=200&fit=crop'},
-            {'id': 203, 'name': 'Vegetarian', 'description': 'Mixed vegetables, olives', 'price': 12.99, 'image': 'https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?w=300&h=200&fit=crop'},
-            {'id': 204, 'name': 'Hawaiian', 'description': 'Ham, pineapple, cheese', 'price': 13.49, 'image': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop'},
-            {'id': 205, 'name': 'Garlic Bread', 'description': 'Crispy garlic bread sticks', 'price': 4.99, 'image': 'https://images.unsplash.com/photo-1573140401552-388fab5200f8?w=300&h=200&fit=crop'},
-        ]
-    },
-    {
-        'id': 3,
-        'name': 'Sushi Master',
-        'category': 'asian',
-        'description': 'Fresh sushi and Japanese cuisine',
-        'image': 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500&h=300&fit=crop',
-        'rating': 4.7,
-        'delivery_time': '35-45 min',
-        'delivery_fee': 3.99,
-        'min_order': 15.00,
-        'is_open': True,
-        'menu': [
-            {'id': 301, 'name': 'California Roll', 'description': '8 pieces, crab, avocado', 'price': 9.99, 'image': 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=300&h=200&fit=crop'},
-            {'id': 302, 'name': 'Salmon Sashimi', 'description': '6 pieces of fresh salmon', 'price': 14.99, 'image': 'https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=300&h=200&fit=crop'},
-            {'id': 303, 'name': 'Spicy Tuna Roll', 'description': '8 pieces, spicy mayo', 'price': 11.99, 'image': 'https://images.unsplash.com/photo-1563612116625-3012372fccce?w=300&h=200&fit=crop'},
-            {'id': 304, 'name': 'Miso Soup', 'description': 'Traditional Japanese soup', 'price': 3.99, 'image': 'https://images.unsplash.com/photo-1606491048458-b4a6f7fd9984?w=300&h=200&fit=crop'},
-            {'id': 305, 'name': 'Edamame', 'description': 'Steamed soybeans', 'price': 4.99, 'image': 'https://images.unsplash.com/photo-1519076772863-1024dbe66004?w=300&h=200&fit=crop'},
-        ]
-    },
-    {
-        'id': 4,
-        'name': 'Green Bowl',
-        'category': 'healthy',
-        'description': 'Healthy bowls, salads & smoothies',
-        'image': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=300&fit=crop',
-        'rating': 4.6,
-        'delivery_time': '25-35 min',
-        'delivery_fee': 2.49,
-        'min_order': 8.00,
-        'is_open': True,
-        'menu': [
-            {'id': 401, 'name': 'Buddha Bowl', 'description': 'Quinoa, avocado, vegetables', 'price': 10.99, 'image': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop'},
-            {'id': 402, 'name': 'Caesar Salad', 'description': 'Chicken, lettuce, parmesan', 'price': 9.99, 'image': 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=300&h=200&fit=crop'},
-            {'id': 403, 'name': 'Protein Bowl', 'description': 'Grilled chicken, rice, veggies', 'price': 11.99, 'image': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=200&fit=crop'},
-            {'id': 404, 'name': 'Green Smoothie', 'description': 'Spinach, banana, mango', 'price': 5.99, 'image': 'https://images.unsplash.com/photo-1505252585461-04db1eb84625?w=300&h=200&fit=crop'},
-            {'id': 405, 'name': 'Acai Bowl', 'description': 'Acai, berries, granola', 'price': 8.99, 'image': 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=300&h=200&fit=crop'},
-        ]
-    },
-    {
-        'id': 5,
-        'name': 'Sweet Treats',
-        'category': 'desserts',
-        'description': 'Delicious desserts, cakes & ice cream',
-        'image': 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=500&h=300&fit=crop',
-        'rating': 4.9,
-        'delivery_time': '20-30 min',
-        'delivery_fee': 2.99,
-        'min_order': 5.00,
-        'is_open': True,
-        'menu': [
-            {'id': 501, 'name': 'Chocolate Cake', 'description': 'Rich chocolate layer cake', 'price': 6.99, 'image': 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=200&fit=crop'},
-            {'id': 502, 'name': 'Cheesecake', 'description': 'New York style cheesecake', 'price': 7.99, 'image': 'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=300&h=200&fit=crop'},
-            {'id': 503, 'name': 'Ice Cream Sundae', 'description': 'Vanilla, chocolate, toppings', 'price': 5.99, 'image': 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=300&h=200&fit=crop'},
-            {'id': 504, 'name': 'Tiramisu', 'description': 'Italian coffee dessert', 'price': 7.49, 'image': 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=300&h=200&fit=crop'},
-            {'id': 505, 'name': 'Brownies', 'description': '4 pieces chocolate brownies', 'price': 4.99, 'image': 'https://images.unsplash.com/photo-1607920591413-4ec007e70023?w=300&h=200&fit=crop'},
-        ]
-    },
-    {
-        'id': 6,
-        'name': 'Coffee Corner',
-        'category': 'coffee',
-        'description': 'Premium coffee, tea & refreshments',
-        'image': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&h=300&fit=crop',
-        'rating': 4.4,
-        'delivery_time': '15-25 min',
-        'delivery_fee': 1.99,
-        'min_order': 5.00,
-        'is_open': True,
-        'menu': [
-            {'id': 601, 'name': 'Cappuccino', 'description': 'Espresso with steamed milk', 'price': 4.99, 'image': 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300&h=200&fit=crop'},
-            {'id': 602, 'name': 'Latte', 'description': 'Smooth espresso with milk', 'price': 4.49, 'image': 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300&h=200&fit=crop'},
-            {'id': 603, 'name': 'Iced Coffee', 'description': 'Cold brew with ice', 'price': 3.99, 'image': 'https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=300&h=200&fit=crop'},
-            {'id': 604, 'name': 'Croissant', 'description': 'Butter croissant', 'price': 2.99, 'image': 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=300&h=200&fit=crop'},
-            {'id': 605, 'name': 'Muffin', 'description': 'Blueberry muffin', 'price': 3.49, 'image': 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=300&h=200&fit=crop'},
-        ]
-    },
-]
-
-# Orders storage (in-memory)
-ORDERS = []
-
-# ============================================
-# RESTAURANT FUNCTIONS
-# ============================================
+# db/db.py
 
 def get_all_restaurants():
-    """
-    Get all restaurants
-    Returns: List of restaurant dictionaries
-    """
-    return RESTAURANTS
+    # Example: return a list of restaurant dictionaries
+    return [
+        {"name": "Green Garden", "cuisine": "Vegetarian", "rating": 4.5},
+        {"name": "Spice Route", "cuisine": "Indian", "rating": 4.2},
+        {"name": "Bella Pasta", "cuisine": "Italian", "rating": 4.7}
+    ]
 
-def get_restaurant_by_id(restaurant_id):
-    """
-    Get a specific restaurant by ID
-    Args:
-        restaurant_id (int): The restaurant ID
-    Returns:
-        dict: Restaurant data or None if not found
-    """
-    for restaurant in RESTAURANTS:
-        if restaurant['id'] == restaurant_id:
-            return restaurant
-    return None
-
-def get_restaurants_by_category(category):
-    """
-    Get restaurants filtered by category
-    Args:
-        category (str): Category ID
-    Returns:
-        list: Filtered restaurants
-    """
-    if category == 'all':
-        return RESTAURANTS
-    return [r for r in RESTAURANTS if r['category'] == category]
-
-def get_menu_item_by_id(item_id):
-    """
-    Find a menu item across all restaurants
-    Args:
-        item_id (int): Menu item ID
-    Returns:
-        tuple: (restaurant, item) or (None, None) if not found
-    """
-    for restaurant in RESTAURANTS:
-        for item in restaurant['menu']:
-            if item['id'] == item_id:
-                return restaurant, item
-    return None, None
-
-# ============================================
-# CART FUNCTIONS
-# ============================================
-
-def get_cart_items(cart_data):
-    """
-    Convert cart data to full item objects with details
-    Args:
-        cart_data (list): List of {'id': item_id, 'quantity': qty}
-    Returns:
-        list: Full cart items with restaurant and item details
-    """
-    cart_items = []
-    
-    for cart_item in cart_data:
-        restaurant, item = get_menu_item_by_id(cart_item['id'])
-        if restaurant and item:
-            cart_items.append({
-                'id': item['id'],
-                'name': item['name'],
-                'description': item['description'],
-                'price': item['price'],
-                'image': item['image'],
-                'quantity': cart_item['quantity'],
-                'restaurant_name': restaurant['name'],
-                'restaurant_id': restaurant['id'],
-                'subtotal': item['price'] * cart_item['quantity']
-            })
-    
-    return cart_items
-
-def add_to_cart(cart_data, item_id, quantity=1):
-    """
-    Add item to cart or update quantity
-    Args:
-        cart_data (list): Current cart
-        item_id (int): Item to add
-        quantity (int): Quantity to add
-    Returns:
-        list: Updated cart
-    """
-    # Check if item exists
-    restaurant, item = get_menu_item_by_id(item_id)
-    if not restaurant or not item:
-        return cart_data
-    
-    # Check if already in cart
-    for cart_item in cart_data:
-        if cart_item['id'] == item_id:
-            cart_item['quantity'] += quantity
-            return cart_data
-    
-    # Add new item
-    cart_data.append({'id': item_id, 'quantity': quantity})
-    return cart_data
-
-def clear_cart():
-    """Clear all items from cart"""
+def get_all_restaurants():
     return []
 
-# ============================================
-# ORDER FUNCTIONS
-# ============================================
+def get_restaurant_by_id(restaurant_id):
+    return {"id": restaurant_id, "name": "Sample", "cuisine": "Fusion"}
+
+def add_to_cart(item_id, quantity):
+    print(f"Added item {item_id} x{quantity} to cart.")
+
+def get_cart_items():
+    return []
+
+def clear_cart():
+    print("Cart cleared.")
+
+def create_order(user_id, cart_items):
+    print(f"Order created for user {user_id} with items: {cart_items}")
+    return {"order_id": 1, "status": "confirmed"}
+
+def get_user_orders(user_id):
+    return [{"order_id": 1, "items": [], "status": "confirmed"}]
 
 def create_order(username, items, total, address, phone, payment_method):
+    # Placeholder logic — replace with actual database code later
+    print(f"Order created for {username} with {len(items)} items.")
+    return 1  # Simulated order ID
+
+
+def get_connection():
     """
-    Create a new order
-    Args:
-        username (str): User's username
-        items (list): Cart items
-        total (float): Total amount
-        address (str): Delivery address
-        phone (str): Phone number
-        payment_method (str): Payment method
-    Returns:
-        int: Order ID
+    Create a connection to the database
+    This is like opening the door to your database!
     """
-    order_id = len(ORDERS) + 1000  # Start from 1000
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # Makes rows act like dictionaries
+    return conn
+
+
+def init_db():
+    """
+    Initialize database - Creates all tables
+    This runs when the app starts
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
     
-    order = {
-        'id': order_id,
-        'username': username,
-        'items': items,
-        'total': total,
-        'address': address,
-        'phone': phone,
-        'payment_method': payment_method,
-        'status': 'pending',
-        'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'estimated_delivery': '30-40 min'
-    }
+    # ═══════════════════════════════════════════════════════════════
+    # 👤 USERS TABLE - Stores user accounts (UPDATED!)
+    # ═══════════════════════════════════════════════════════════════
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            phone TEXT,
+            password TEXT NOT NULL,
+            address TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
     
-    ORDERS.append(order)
-    return order_id
+    # ═══════════════════════════════════════════════════════════════
+    # 🏪 RESTAURANTS TABLE - All restaurants
+    # ═══════════════════════════════════════════════════════════════
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS restaurants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            cuisine_type TEXT NOT NULL,
+            address TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            rating REAL DEFAULT 0.0,
+            delivery_time TEXT,
+            min_order REAL DEFAULT 0.0,
+            delivery_fee REAL DEFAULT 0.0,
+            is_open BOOLEAN DEFAULT 1,
+            image_url TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # ═══════════════════════════════════════════════════════════════
+    # 🍽️ MENU ITEMS TABLE - Food items for each restaurant
+    # ═══════════════════════════════════════════════════════════════
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS menu_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            restaurant_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT,
+            price REAL NOT NULL,
+            category TEXT NOT NULL,
+            image_url TEXT,
+            is_available BOOLEAN DEFAULT 1,
+            is_vegetarian BOOLEAN DEFAULT 0,
+            is_vegan BOOLEAN DEFAULT 0,
+            spice_level INTEGER DEFAULT 0,
+            FOREIGN KEY (restaurant_id) REFERENCES restaurants (id)
+        )
+    ''')
+    
+    # ═══════════════════════════════════════════════════════════════
+    # 🛒 ORDERS TABLE - Customer orders
+    # ═══════════════════════════════════════════════════════════════
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            restaurant_id INTEGER NOT NULL,
+            total_amount REAL NOT NULL,
+            delivery_address TEXT NOT NULL,
+            status TEXT DEFAULT 'pending',
+            payment_method TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (restaurant_id) REFERENCES restaurants (id)
+        )
+    ''')
+    
+    # ═══════════════════════════════════════════════════════════════
+    # 📦 ORDER ITEMS TABLE - Individual items in each order
+    # ═══════════════════════════════════════════════════════════════
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL,
+            menu_item_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL,
+            price REAL NOT NULL,
+            FOREIGN KEY (order_id) REFERENCES orders (id),
+            FOREIGN KEY (menu_item_id) REFERENCES menu_items (id)
+        )
+    ''')
+    
+    # ═══════════════════════════════════════════════════════════════
+    # 🌟 Insert Sample Data (Only if tables are empty)
+    # ═══════════════════════════════════════════════════════════════
+    
+    # Check if restaurants table is empty
+    cursor.execute('SELECT COUNT(*) FROM restaurants')
+    if cursor.fetchone()[0] == 0:
+        print("📦 Adding sample restaurants...")
+        
+        # Sample UK Restaurants
+        restaurants_data = [
+            ('Pizza Palace', 'Italian', '123 Oxford St, London', '+44 20 1234 5678', 4.8, '20-30 min', 10.00, 2.99, 1, None),
+            ('Burger House', 'American', '456 King St, London', '+44 20 2345 6789', 4.6, '25-35 min', 8.00, 1.99, 1, None),
+            ('Noodle Express', 'Asian', '789 Queen St, Manchester', '+44 161 3456 7890', 4.9, '15-25 min', 12.00, 3.49, 1, None),
+            ('Fresh & Healthy', 'Healthy', '321 Park Rd, Birmingham', '+44 121 4567 8901', 4.7, '20-30 min', 15.00, 2.49, 1, None),
+            ('Curry Kingdom', 'Indian', '654 High St, Leeds', '+44 113 5678 9012', 4.8, '30-40 min', 10.00, 2.99, 1, None),
+            ('Sushi Master', 'Japanese', '987 Main St, Edinburgh', '+44 131 6789 0123', 4.9, '25-35 min', 18.00, 3.99, 1, None),
+        ]
+        
+        cursor.executemany('''
+            INSERT INTO restaurants (name, cuisine_type, address, phone, rating, delivery_time, min_order, delivery_fee, is_open, image_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', restaurants_data)
+        
+        print("✅ Sample restaurants added!")
+        
+        # Sample Menu Items
+        print("📦 Adding sample menu items...")
+        
+        menu_items_data = [
+            # Pizza Palace (id: 1)
+            (1, 'Margherita Pizza', 'Classic tomato and mozzarella', 9.99, 'Pizza', None, 1, 1, 0, 0),
+            (1, 'Pepperoni Pizza', 'Spicy pepperoni with cheese', 11.99, 'Pizza', None, 1, 0, 0, 1),
+            (1, 'Vegetarian Supreme', 'Mixed vegetables with cheese', 10.99, 'Pizza', None, 1, 1, 0, 0),
+            (1, 'Garlic Bread', 'Fresh baked garlic bread', 4.99, 'Sides', None, 1, 1, 0, 0),
+            (1, 'Caesar Salad', 'Fresh romaine with parmesan', 6.99, 'Salads', None, 1, 0, 0, 0),
+            
+            # Burger House (id: 2)
+            (2, 'Classic Beef Burger', 'Juicy beef patty with lettuce', 8.99, 'Burgers', None, 1, 0, 0, 0),
+            (2, 'Chicken Burger', 'Grilled chicken breast', 7.99, 'Burgers', None, 1, 0, 0, 0),
+            (2, 'Veggie Burger', 'Plant-based patty', 7.49, 'Burgers', None, 1, 1, 1, 0),
+            (2, 'French Fries', 'Crispy golden fries', 3.99, 'Sides', None, 1, 1, 1, 0),
+            (2, 'Onion Rings', 'Crispy fried onion rings', 4.49, 'Sides', None, 1, 1, 0, 0),
+            
+            # Noodle Express (id: 3)
+            (3, 'Pad Thai', 'Thai stir-fried noodles', 10.99, 'Noodles', None, 1, 0, 0, 2),
+            (3, 'Chicken Ramen', 'Japanese noodle soup', 11.99, 'Noodles', None, 1, 0, 0, 1),
+            (3, 'Vegetable Chow Mein', 'Stir-fried noodles with veggies', 9.99, 'Noodles', None, 1, 1, 1, 0),
+            (3, 'Spring Rolls', 'Crispy vegetable rolls', 5.99, 'Appetizers', None, 1, 1, 1, 0),
+            (3, 'Fried Rice', 'Egg fried rice', 7.99, 'Rice', None, 1, 1, 0, 0),
+            
+            # Fresh & Healthy (id: 4)
+            (4, 'Greek Salad', 'Feta, olives, cucumber', 8.99, 'Salads', None, 1, 1, 0, 0),
+            (4, 'Quinoa Bowl', 'Quinoa with roasted vegetables', 10.99, 'Bowls', None, 1, 1, 1, 0),
+            (4, 'Chicken Caesar Wrap', 'Grilled chicken in tortilla', 7.99, 'Wraps', None, 1, 0, 0, 0),
+            (4, 'Green Smoothie', 'Spinach, banana, apple', 5.99, 'Drinks', None, 1, 1, 1, 0),
+            (4, 'Avocado Toast', 'Sourdough with smashed avocado', 6.99, 'Breakfast', None, 1, 1, 1, 0),
+            
+            # Curry Kingdom (id: 5)
+            (5, 'Chicken Tikka Masala', 'Creamy tomato curry', 12.99, 'Curry', None, 1, 0, 0, 2),
+            (5, 'Vegetable Biryani', 'Fragrant rice with mixed veggies', 9.99, 'Rice', None, 1, 1, 0, 1),
+            (5, 'Butter Chicken', 'Mild creamy chicken curry', 13.99, 'Curry', None, 1, 0, 0, 1),
+            (5, 'Garlic Naan', 'Fresh baked bread with garlic', 3.99, 'Breads', None, 1, 1, 0, 0),
+            (5, 'Samosas', 'Crispy vegetable pastries', 5.99, 'Appetizers', None, 1, 1, 0, 1),
+            
+            # Sushi Master (id: 6)
+            (6, 'California Roll', 'Crab, avocado, cucumber', 8.99, 'Sushi Rolls', None, 1, 0, 0, 0),
+            (6, 'Salmon Nigiri', 'Fresh salmon on rice', 6.99, 'Nigiri', None, 1, 0, 0, 0),
+            (6, 'Vegetarian Roll', 'Avocado, cucumber, carrot', 7.49, 'Sushi Rolls', None, 1, 1, 1, 0),
+            (6, 'Miso Soup', 'Traditional Japanese soup', 3.99, 'Soups', None, 1, 1, 0, 0),
+            (6, 'Edamame', 'Steamed soybeans', 4.99, 'Appetizers', None, 1, 1, 1, 0),
+        ]
+        
+        cursor.executemany('''
+            INSERT INTO menu_items (restaurant_id, name, description, price, category, image_url, is_available, is_vegetarian, is_vegan, spice_level)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', menu_items_data)
+        
+        print("✅ Sample menu items added!")
+    
+    conn.commit()
+    conn.close()
+    print("✅ Database initialized successfully!")
 
-def get_order_by_id(order_id):
-    """
-    Get order by ID
-    Args:
-        order_id (int): Order ID
-    Returns:
-        dict: Order data or None
-    """
-    for order in ORDERS:
-        if order['id'] == order_id:
-            return order
-    return None
 
-def get_user_orders(username):
-    """
-    Get all orders for a user
-    Args:
-        username (str): Username
-    Returns:
-        list: User's orders (newest first)
-    """
-    user_orders = [o for o in ORDERS if o['username'] == username]
-    return sorted(user_orders, key=lambda x: x['created_at'], reverse=True)
-
-def get_categories():
-    """Get all food categories"""
-    return CATEGORIES
+if __name__ == '__main__':
+    # Run this to create/reset database
+    init_db()
+    print("🎉 Database setup complete!")

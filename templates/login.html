@@ -1,349 +1,228 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - FOODIE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-{% block extra_css %}
-<style>
-    .auth-page {
-        min-height: calc(100vh - 200px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem 1rem;
-        background: linear-gradient(135deg, #FFC244 0%, #FF6B35 100%);
-    }
-    
-    .auth-container {
-        background: white;
-        padding: 3rem;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-lg);
-        max-width: 500px;
-        width: 100%;
-        animation: fadeIn 0.5s ease;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .auth-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    
-    .auth-header h1 {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-        color: var(--dark);
-    }
-    
-    .auth-header p {
-        color: var(--gray);
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: var(--dark);
-    }
-    
-    .form-input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid var(--gray-light);
-        border-radius: var(--radius-md);
-        font-size: 1rem;
-        font-family: 'Poppins', sans-serif;
-        transition: all 0.3s;
-    }
-    
-    .form-input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(255, 194, 68, 0.1);
-    }
-    
-    .input-icon {
-        position: relative;
-    }
-    
-    .input-icon i {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--gray);
-    }
-    
-    .input-icon .form-input {
-        padding-left: 3rem;
-    }
-    
-    .password-toggle {
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        color: var(--gray);
-        transition: color 0.3s;
-    }
-    
-    .password-toggle:hover {
-        color: var(--dark);
-    }
-    
-    .form-options {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        font-size: 0.9rem;
-    }
-    
-    .remember-me {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .remember-me input {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-    }
-    
-    .forgot-password {
-        color: var(--primary-dark);
-        text-decoration: none;
-        font-weight: 500;
-    }
-    
-    .forgot-password:hover {
-        text-decoration: underline;
-    }
-    
-    .btn-submit {
-        width: 100%;
-        padding: 1rem;
-        background: var(--primary-color);
-        border: none;
-        border-radius: var(--radius-md);
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        font-family: 'Poppins', sans-serif;
-        color: var(--dark);
-    }
-    
-    .btn-submit:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-    
-    .divider {
-        text-align: center;
-        margin: 2rem 0;
-        position: relative;
-    }
-    
-    .divider::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 50%;
-        height: 1px;
-        background: var(--gray-light);
-    }
-    
-    .divider span {
-        background: white;
-        padding: 0 1rem;
-        position: relative;
-        color: var(--gray);
-        font-size: 0.9rem;
-    }
-    
-    .social-buttons {
-        display: grid;
-        gap: 1rem;
-    }
-    
-    .btn-social {
-        padding: 0.75rem;
-        border: 2px solid var(--gray-light);
-        background: white;
-        border-radius: var(--radius-md);
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        text-decoration: none;
-        color: var(--dark);
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    .btn-social:hover {
-        border-color: var(--primary-color);
-        background: #FFF9E6;
-    }
-    
-    .auth-footer {
-        text-align: center;
-        margin-top: 2rem;
-        color: var(--gray);
-    }
-    
-    .auth-footer a {
-        color: var(--primary-dark);
-        text-decoration: none;
-        font-weight: 600;
-    }
-    
-    .auth-footer a:hover {
-        text-decoration: underline;
-    }
-    
-    @media (max-width: 768px) {
-        .auth-container {
-            padding: 2rem 1.5rem;
-        }
-        
-        .auth-header h1 {
-            font-size: 1.5rem;
-        }
-    }
-</style>
-{% endblock %}
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+    .container { display: flex; height: 100vh; }
 
-{% block content %}
-<div class="auth-page">
-    <div class="auth-container">
-        <div class="auth-header">
-            <h1>🍕 Welcome Back!</h1>
-            <p>Log in to your FOODIE account</p>
-        </div>
-        
-        <form method="POST" action="{{ url_for('login') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            
-            <!-- Username Field -->
-            <div class="form-group">
-                <label class="form-label" for="username">
-                    <i class="fas fa-user"></i> Username
-                </label>
-                <div class="input-icon">
-                    <i class="fas fa-user"></i>
-                    <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
-                        class="form-input"
-                        placeholder="Enter your username" 
-                        required
-                        autocomplete="username"
-                        autofocus
-                    >
-                </div>
-            </div>
-            
-            <!-- Password Field -->
-            <div class="form-group">
-                <label class="form-label" for="password">
-                    <i class="fas fa-lock"></i> Password
-                </label>
-                <div class="input-icon">
-                    <i class="fas fa-lock"></i>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        class="form-input"
-                        placeholder="Enter your password" 
-                        required
-                        autocomplete="current-password"
-                    >
-                    <span class="password-toggle" onclick="togglePassword()">
-                        <i class="fas fa-eye" id="toggleIcon"></i>
-                    </span>
-                </div>
-            </div>
-            
-            <!-- Remember Me & Forgot Password -->
-            <div class="form-options">
-                <label class="remember-me">
-                    <input type="checkbox" name="remember" id="remember">
-                    <span>Remember me</span>
-                </label>
-                <a href="#" class="forgot-password">Forgot password?</a>
-            </div>
-            
-            <!-- Submit Button -->
-            <button type="submit" class="btn-submit">
-                <i class="fas fa-sign-in-alt"></i> Log In
-            </button>
-        </form>
-        
-        <!-- Divider -->
-        <div class="divider">
-            <span>or continue with</span>
-        </div>
-        
-        <!-- Social Login Buttons -->
-        <div class="social-buttons">
-            <a href="{{ url_for('auth_google') }}" class="btn-social">
-                <i class="fab fa-google"></i>
-                Continue with Google
-            </a>
-            <a href="{{ url_for('auth_linkedin') }}" class="btn-social">
-                <i class="fab fa-linkedin"></i>
-                Continue with LinkedIn
-            </a>
-        </div>
-        
-        <!-- Footer -->
-        <div class="auth-footer">
-            Don't have an account? 
-            <a href="{{ url_for('register') }}">Sign up</a>
-        </div>
+    /* LEFT SIDE - Pictures */
+    .left-section {
+      flex: 1;
+      background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .image-slider { position: relative; width: 80%; height: 80%; }
+    .food-image {
+      position: absolute; width: 100%; height: 100%;
+      object-fit: contain; opacity: 0; transform: scale(0.8);
+      transition: all 1s ease-in-out; border-radius: 20px;
+      filter: drop-shadow(0 20px 60px rgba(0,0,0,0.3));
+    }
+    .food-image.active { opacity: 1; transform: scale(1); }
+    .left-content {
+      position: absolute; bottom: 60px; left: 60px; color: white;
+    }
+    .left-content h1 { font-size: 48px; font-weight: 700; margin-bottom: 16px; }
+    .left-content p { font-size: 20px; }
+
+    /* RIGHT SIDE - Form */
+    .right-section {
+      flex: 1; background: white;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px;
+    }
+    .form-container { width: 100%; max-width: 440px; }
+    .logo { font-size: 32px; font-weight: 700; color: #FF6B35; margin-bottom: 48px; }
+    .form-header h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+    .form-header p { font-size: 16px; color: #666; margin-bottom: 32px; }
+
+    .form-group { margin-bottom: 24px; }
+    label { font-size: 14px; font-weight: 500; margin-bottom: 8px; display: block; }
+    .input-wrapper { position: relative; }
+    .input-icon { position: absolute; left: 16px; color: #999; font-size: 18px; }
+    input {
+      width: 100%; padding: 14px 16px 14px 48px;
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      font-size: 15px; transition: all 0.3s ease;
+    }
+    input:focus {
+      outline: none; border-color: #FF6B35;
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+    .error-message { font-size: 13px; color: red; margin-top: 6px; }
+
+    .form-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px;
+    }
+    .remember-me { font-size: 14px; color: #666; }
+    .forgot-password { font-size: 14px; color: #FF6B35; text-decoration: none; }
+
+    .btn-primary {
+      width: 100%; padding: 16px;
+      background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+      color: white; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    .btn-primary:hover { transform: translateY(-2px); }
+
+    .divider { display: flex; align-items: center; margin: 32px 0; color: #999; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
+    .divider span { padding: 0 16px; }
+
+    .social-login { display: flex; gap: 12px; margin-bottom: 32px; }
+    .social-btn {
+      flex: 1; padding: 14px; border: 2px solid #e0e0e0;
+      border-radius: 12px; background: white; cursor: pointer;
+    }
+    .signup-link { text-align: center; font-size: 14px; color: #666; }
+    .signup-link a { color: #FF6B35; font-weight: 600; text-decoration: none; }
+    .signup-link a:hover { text-decoration: underline; }
+
+    @media (max-width: 968px) { .left-section { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- LEFT SIDE -->
+    <div class="left-section">
+      <div class="image-slider">
+        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800" class="food-image active" alt="Pizza">
+        <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=800" class="food-image" alt="Burger">
+        <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800" class="food-image" alt="Sushi">
+      </div>
+      <div class="left-content">
+        <h1>🍕 Welcome Back!</h1>
+        <p>Craving something delicious? Let's get you fed!</p>
+      </div>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
+    <!-- RIGHT SIDE -->
+    <div class="right-section">
+      <div class="form-container">
+        <div class="logo">🍕 FOODIE</div>
+        <div class="form-header">
+          <h2>Sign in to your account</h2>
+          <p>Welcome back! Please enter your details</p>
+        </div>
+
+        <form id="loginForm" method="POST" action="/login">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📧</span>
+              <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <label class="remember-me">
+              <input type="checkbox" name="remember"> Remember me
+            </label>
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+
+        <div class="divider"><span>or continue with</span></div>
+        <div class="social-login">
+          <button class="social-btn">🔍 Google</button>
+          <button class="social-btn">📘 Facebook</button>
+        </div>
+        <div class="signup-link">
+          Don't have an account? <a href="/register">Sign up for free</a>
+        </div>
+      </div>
+    </div>
+  </div>
 <script>
-    // Toggle password visibility
-    function togglePassword() {
-        const passwordInput = document.getElementById('password');
-        const toggleIcon = document.getElementById('toggleIcon');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
-        }
+  // Image slider
+  const images = document.querySelectorAll('.food-image');
+  let currentIndex = 0;
+
+  setInterval(() => {
+    images[currentIndex].classList.remove('active');
+    currentIndex = (currentIndex + 1) % images.length;
+    images[currentIndex].classList.add('active');
+  }, 4000);
+
+  // Error helpers
+  function showError(input, message) {
+    let error = input.parentElement.querySelector('.error-message');
+    if (!error) {
+      error = document.createElement('small');
+      error.className = 'error-message';
+      input.parentElement.appendChild(error);
     }
+    error.textContent = message;
+  }
+
+  function clearError(input) {
+    const error = input.parentElement.querySelector('.error-message');
+    if (error) error.textContent = '';
+  }
+
+  // Validation + redirect
+  const form = document.getElementById('loginForm');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    let valid = true;
+
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
     
-    // Add enter key support
-    document.getElementById('password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            this.form.submit();
-        }
+    // Email check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.value)) {
+      showError(email, 'Please enter a valid email');
+      valid = false;
+    } else clearError(email);
+
+    // Password check (at least 6 characters)
+    if (password.value.length < 6) {
+      showError(password, 'Password must be at least 6 characters');
+      valid = false;
+    } else clearError(password);
+
+    // If valid, the form will be submitted to the server
+    if (valid) {
+      form.submit();
+    }
+  });
+
+  // Show/Hide password toggle
+  document.querySelectorAll('input[type="password"]').forEach(input => {
+    const toggle = document.createElement('span');
+    toggle.textContent = '👁️';
+    toggle.style.cursor = 'pointer';
+    toggle.style.position = 'absolute';
+    toggle.style.right = '16px';
+    input.parentElement.appendChild(toggle);
+
+    toggle.addEventListener('click', () => {
+      input.type = input.type === 'password' ? 'text' : 'password';
     });
+  });
 </script>
-{% endblock %}
+</body>
+</html>

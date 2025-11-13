@@ -22,16 +22,16 @@ from flask_wtf import CSRFProtect
 from flask_wtf.csrf import generate_csrf
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 # Import database functions
 from db.db import (
     get_all_restaurants,
     get_restaurant_by_id,
     add_to_cart,
     get_cart_items,
-    clear_cart,
-    get_user_orders,
-    create_order
+    clear_cart
 )
+
 
 # ============================================
 # APPLICATION SETUP
@@ -54,7 +54,7 @@ csrf = CSRFProtect(app)
 @app.context_processor
 def inject_csrf_token():
     """Make CSRF token available to all templates"""
-    return dict(csrf_token=generate_csrf())
+    return dict(csrf_token=generate_csrf())  # Add parentheses to call the function
 
 @app.context_processor
 def inject_site_info():
@@ -79,8 +79,10 @@ def inject_user_info():
 
 def login_required(f):
     """
-    Decorator to protect routes that require login
-    Usage: @login_required above any route function
+    🔒 This is like a bouncer at a club!
+    It checks if you're logged in before letting you in.
+    If not logged in → sends you to login page
+    If logged in → lets you through! ✅
     """
     from functools import wraps
     @wraps(f)
@@ -98,17 +100,49 @@ def login_required(f):
 @app.route('/')
 def index():
     """
-    Landing Page / Home Page
-    Shows featured restaurants and categories
+    🏠 LANDING PAGE - This is the FIRST page people see!
+    
+    What happens here:
+    1. If you're NOT logged in → Shows beautiful landing page
+       (Landing page has "Sign Up" and "Login" buttons)
+    
+    2. If you're ALREADY logged in → Sends you to home page
+       (Home page shows restaurants)
+    
+    Think of it like a door:
+    - Visitors see a welcome sign 👋
+    - Members go straight inside 🚪
+    """
+    # Check: Are you logged in?
+    if session.get('logged_in', False):
+        # YES! You're logged in → Go to home page (restaurants)
+        return redirect(url_for('home'))
+    else:
+        # NO! You're a visitor → Show landing page
+        return render_template('landing.html', title="Welcome to FOODIE")
+
+
+@app.route('/home')
+@login_required
+def home():
+    """
+    🏡 HOME PAGE - For logged-in users only!
+    
+    This shows all the restaurants you can order from.
+    Only people who logged in can see this page.
+    
+    If you try to visit without logging in:
+    → The @login_required bouncer sends you to login page!
     """
     restaurants = get_all_restaurants()
     return render_template('index.html', 
                          title="Home",
                          restaurants=restaurants)
 
+
 @app.route('/about')
 def about():
-    """About page - information about FOODIE"""
+    """📖 About page - Anyone can read this!"""
     return render_template('about.html', title="About Us")
 
 # ============================================
@@ -118,46 +152,40 @@ def about():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """
-    Registration page for new users
-    GET: Show registration form
-    POST: Process registration
+    📝 SIGN UP PAGE
     """
     # If already logged in, redirect to home
     if session.get('logged_in', False):
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
     
     if request.method == 'POST':
+        # Get form data
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
         
-        # Validation
+        # Basic validation
         error = None
         
-        if not username:
-            error = '👤 Username is required!'
-        elif len(username) < 3:
+        if not username or len(username) < 3:
             error = '👤 Username must be at least 3 characters!'
-        elif not email:
-            error = '📧 Email is required!'
-        elif '@' not in email:
+        elif not email or '@' not in email:
             error = '📧 Please enter a valid email address!'
-        elif not password:
-            error = '🔒 Password is required!'
-        elif len(password) < 6:
+        elif not password or len(password) < 6:
             error = '🔒 Password must be at least 6 characters!'
         elif password != confirm_password:
             error = '🔒 Passwords do not match!'
-        elif session.get('registered_users', {}).get(username):
+        
+        # Check if username already exists
+        users = session.get('registered_users', {})
+        if username in users:
             error = f'👤 Username "{username}" is already taken!'
-        elif session.get('registered_users', {}).get(email):
-            error = f'📧 Email "{email}" is already registered!'
         
         if error:
             flash(error, 'danger')
         else:
-            # Store user (in production, use a real database!)
+            # Save user
             if 'registered_users' not in session:
                 session['registered_users'] = {}
             
@@ -168,22 +196,38 @@ def register():
             }
             session.modified = True
             
-            flash(f'🎉 Welcome to FOODIE, {username}! Please log in.', 'success')
+            # SUCCESS!
+            flash(f'🎉 Account created successfully! Welcome to FOODIE, {username}!', 'success')
             return redirect(url_for('login'))
     
     return render_template('register.html', title="Join FOODIE")
+    
+    # Just visiting? Show the sign-up form
+    # Also show any success messages if they exist
+    return render_template('register.html', title="Join FOODIE")
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    Login page for existing users
-    GET: Show login form
-    POST: Process login
-    """
-    # If already logged in, redirect to home
-    if session.get('logged_in', False):
-        return redirect(url_for('index'))
+    🔑 LOGIN PAGE
     
+    Step-by-step flow:
+    1. You type your username and password
+    2. Click "Login" button
+    3. We check if username and password match
+    4. If correct → Log you in and send you to HOME page! 🏡✅
+    5. If wrong → Show error message ❌
+    
+    After logging in successfully:
+    → You go to HOME page where you can see restaurants!
+    """
+    
+    # Already logged in? Go straight to home!
+    if session.get('logged_in', False):
+        return redirect(url_for('home'))
+    
+    # Did you click "Login" button?
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
@@ -195,7 +239,7 @@ def login():
         elif not password:
             error = '🔒 Password is required!'
         else:
-            # Check if user exists
+            # Check if this user exists
             users = session.get('registered_users', {})
             user = users.get(username)
             
@@ -204,26 +248,38 @@ def login():
             elif not check_password_hash(user['password'], password):
                 error = '❌ Invalid username or password!'
         
+        # Was there an error?
         if error:
             flash(error, 'danger')
         else:
-            # Log in the user
+            # SUCCESS! You're logged in! 🎉
             session['logged_in'] = True
             session['username'] = username
             session['email'] = user['email']
             
+            # Show success message
             flash(f'🎉 Welcome back, {username}! Ready to order?', 'success')
-            return redirect(url_for('index'))
+            
+            # IMPORTANT: Send you to HOME page (restaurants)!
+            return redirect(url_for('home'))  # ← SENDS YOU TO HOME!
     
+    # Just visiting? Show login form
     return render_template('login.html', title="Login")
 
 @app.route('/logout')
 def logout():
-    """Log out the current user"""
+    """
+    👋 LOGOUT
+    
+    This clears all your login information and sends you back
+    to the LANDING page (the first page visitors see).
+    
+    It's like leaving a building and the door closes behind you!
+    """
     username = session.get('username', 'User')
-    session.clear()
+    session.clear()  # Delete all login info
     flash(f'👋 See you soon, {username}!', 'info')
-    return redirect(url_for('index'))
+    return redirect(url_for('index'))  # Go back to landing page
 
 # ============================================
 # RESTAURANT ROUTES
@@ -232,19 +288,21 @@ def logout():
 @app.route('/restaurants')
 def restaurants():
     """
-    Show all restaurants
-    Can filter by category, cuisine, etc.
+    🍔 ALL RESTAURANTS PAGE
+    
+    Shows a list of all restaurants.
+    You can filter by category or search for specific food!
     """
     category = request.args.get('category', 'all')
     search = request.args.get('search', '')
     
     all_restaurants = get_all_restaurants()
     
-    # Filter by category
+    # Filter by category (Pizza, Burgers, etc.)
     if category != 'all':
         all_restaurants = [r for r in all_restaurants if r['category'] == category]
     
-    # Filter by search
+    # Filter by search words
     if search:
         search = search.lower()
         all_restaurants = [r for r in all_restaurants 
@@ -257,11 +315,14 @@ def restaurants():
                          current_category=category,
                          search_query=search)
 
+
 @app.route('/restaurant/<int:restaurant_id>')
 def restaurant_detail(restaurant_id):
     """
-    Show details of a specific restaurant
-    Including menu items
+    🍕 SINGLE RESTAURANT PAGE
+    
+    Shows ONE restaurant with all its menu items.
+    Like opening a menu at a restaurant!
     """
     restaurant = get_restaurant_by_id(restaurant_id)
     
@@ -280,10 +341,15 @@ def restaurant_detail(restaurant_id):
 @app.route('/cart')
 @login_required
 def cart():
-    """Show shopping cart"""
+    """
+    🛒 SHOPPING CART
+    
+    Shows all the food items you want to order.
+    Only logged-in users can have a cart!
+    """
     cart_items = get_cart_items(session.get('cart', []))
     
-    # Calculate total
+    # Add up all prices
     total = sum(item['price'] * item['quantity'] for item in cart_items)
     
     return render_template('cart.html',
@@ -291,10 +357,16 @@ def cart():
                          cart_items=cart_items,
                          total=total)
 
+
 @app.route('/add-to-cart', methods=['POST'])
 @login_required
 def add_to_cart_route():
-    """Add item to cart (AJAX endpoint)"""
+    """
+    ➕ ADD TO CART (AJAX)
+    
+    When you click "Add to Cart" button on a food item,
+    this adds it to your cart!
+    """
     data = request.get_json()
     item_id = data.get('item_id')
     quantity = data.get('quantity', 1)
@@ -306,14 +378,15 @@ def add_to_cart_route():
     if 'cart' not in session:
         session['cart'] = []
     
-    # Check if item already in cart
+    # Is this item already in your cart?
     item_found = False
     for item in session['cart']:
         if item['id'] == item_id:
-            item['quantity'] += quantity
+            item['quantity'] += quantity  # Add more!
             item_found = True
             break
     
+    # New item? Add it!
     if not item_found:
         session['cart'].append({'id': item_id, 'quantity': quantity})
     
@@ -325,10 +398,11 @@ def add_to_cart_route():
         'cart_count': len(session['cart'])
     })
 
+
 @app.route('/remove-from-cart/<int:item_id>', methods=['POST'])
 @login_required
 def remove_from_cart(item_id):
-    """Remove item from cart"""
+    """🗑️ Remove item from cart"""
     if 'cart' in session:
         session['cart'] = [item for item in session['cart'] if item['id'] != item_id]
         session.modified = True
@@ -336,10 +410,16 @@ def remove_from_cart(item_id):
     
     return redirect(url_for('cart'))
 
+
 @app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
-    """Checkout page"""
+    """
+    💳 CHECKOUT PAGE
+    
+    Where you pay and enter your delivery address.
+    Final step before ordering!
+    """
     cart_items = get_cart_items(session.get('cart', []))
     
     if not cart_items:
@@ -349,7 +429,7 @@ def checkout():
     total = sum(item['price'] * item['quantity'] for item in cart_items)
     
     if request.method == 'POST':
-        # Process order
+        # Get delivery info
         address = request.form.get('address')
         phone = request.form.get('phone')
         payment_method = request.form.get('payment_method')
@@ -358,6 +438,7 @@ def checkout():
             flash('📍 Please fill in all delivery details!', 'danger')
         else:
             # Create order
+            from db.db import create_order
             order_id = create_order(
                 username=session['username'],
                 items=cart_items,
@@ -367,7 +448,7 @@ def checkout():
                 payment_method=payment_method
             )
             
-            # Clear cart
+            # Empty the cart
             session['cart'] = []
             session.modified = True
             
@@ -379,18 +460,21 @@ def checkout():
                          cart_items=cart_items,
                          total=total)
 
+
 @app.route('/order/<int:order_id>')
 @login_required
 def order_confirmation(order_id):
-    """Order confirmation page"""
+    """✅ Order confirmed! Your food is on the way!"""
     return render_template('order_confirmation.html',
                          title="Order Confirmed",
                          order_id=order_id)
 
+
 @app.route('/my-orders')
 @login_required
 def my_orders():
-    """Show user's order history"""
+    """📜 Your order history - See all your past orders"""
+    from db.db import get_user_orders
     orders = get_user_orders(session['username'])
     return render_template('my_orders.html',
                          title="My Orders",
@@ -402,7 +486,7 @@ def my_orders():
 
 @app.route('/api/check-username')
 def check_username():
-    """Check if username is available"""
+    """Check if username is available (for live checking)"""
     username = request.args.get('username', '').strip()
     users = session.get('registered_users', {})
     available = username not in users and len(username) >= 3
@@ -414,12 +498,12 @@ def check_username():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    """Handle 404 errors"""
+    """😢 Page not found (404 error)"""
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(e):
-    """Handle 500 errors"""
+    """💥 Something went wrong (500 error)"""
     return render_template('500.html'), 500
 
 # ============================================
@@ -433,7 +517,11 @@ if __name__ == '__main__':
     print("📱 Open your browser and go to:")
     print("   http://localhost:5000")
     print("=" * 50)
+    print("\n🎯 USER FLOW:")
+    print("   1. Landing Page (/)        → Shows welcome page")
+    print("   2. Sign Up (/register)     → Create account")
+    print("   3. Login (/login)          → Enter with username/password")
+    print("   4. Home Page (/home)       → See restaurants!")
+    print("=" * 50)
     
     app.run(host='0.0.0.0', port=5000, debug=True)
-
-
